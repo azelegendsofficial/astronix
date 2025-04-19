@@ -559,13 +559,16 @@
                     </div>
                 </div>
                 <div class="lyrics-content">
-                    <div class="lyrics-line active">Ku merasakan apa yang kau rasakan tanpa ragu ku bilang kamu yang paling paham aku tua jadi satu pelah hati</div>
-                    <div class="lyrics-line">Aku aku mau maju tapi tinggal tunggu waktu ku merasakan apa yang kau rasakan tanpa ragu ku bilang kamu yang</div>
-                    <div class="lyrics-line">Paling paham aku dua jadi satu malah hati aku aku mau maju tapi tinggal tunggu</div>
-                    <div class="lyrics-line">Aku merasakan apa yang kau rasakan tanpa raguku bilang kamu yang paling paham aku tuh jadi satu perah hati aku aku mau maju tapi tinggal tunggu</div>
-                    <div class="lyrics-line">Aku merasa apa yang kau rasakan tempat aku ku bilang kamu yang paling paham aku tu jadi satu pedah hati aku aku mau maju tapi tinggal tunggu</div>
-                    <div class="lyrics-line">Aku merasakan apa yang kau rasakan tanpa ragu ku bilang kamu yang paling paham aku tu jadi satu perah hati aku aku mau maju tapi tinggalku aku merasa"</div>
+                    <div class="lyrics-line active">Lagu [PEMBUKAAN]</div>
+                    <div class="lyrics-line">Ku merasakan apa yang kau rasakan tanpa ragu ku bilang kamu yang paling paham aku tua jadi satu belah hati</div>
+                    <div class="lyrics-line">Aku mau maju tapi tinggal tunggu waktu ku merasakan apa yang kau rasakan tanpa ragu ku bilang kamu yang</div>
+                    <div class="lyrics-line">Paling paham aku dua jadi satu malah hati aku aku mau maju tapi tinggal tunggu waktu</div>
+                    <div class="lyrics-line">Lagu</div>
+                    <div class="lyrics-line">ku merasakan apa yang kau rasakan tanpa raguku bilang kamu yang paling paham aku dua jadi satu belah hati aku mau maju tapi tinggal tunggu waktu</div>
+                    <div class="lyrics-line">ku merasa apa yang kau rasakan tempat aku ku bilang kamu yang paling paham aku dua jadi satu belah hati aku mau maju tapi tinggal tunggu waktu</div>
+                    <div class="lyrics-line">ku merasakan apa yang kau rasakan tanpa ragu ku bilang kamu yang paling paham aku dua jadi satu perah hati aku aku mau maju tapi tinggal tunggu waktu, aku merasa</div>
                     <div class="lyrics-line">Apa yang kau rasakan tanpa ragu ku bilang kamu yang paling pahamku sudah jadi satu hati aku aku mau maju tapi tinggalku</div>
+                    <div class="lyrics-line">Lagu [PENUTUPAN]</div>
                 </div>
             </div>
         </main>
@@ -747,13 +750,17 @@ let isRepeat = false;
 
 // Lyrics timing map (time in seconds when each lyric should be highlighted)
 const lyricTimings = [
-    { time: 13, index: 0 },
-    { time: 23, index: 1 }, // [00:13]
-    { time: 33, index: 2 }, // [00:23]
-    { time: 55, index: 3 }, // [00:33]
-    { time: 66, index: 4 }, // [00:55]
-    { time: 76, index: 5 }, // [01:06]
-    { time: 98, index: 6 }, // [01:16]
+    { time: 0, index: 0 },
+    { time: 13, index: 1 },
+    { time: 23, index: 2 }, // [00:13]
+    { time: 33, index: 3 },
+    { time: 41, index: 4 },
+    { time: 55, index: 5 }, // [00:33]
+    { time: 66, index: 6 }, // [00:55]
+    { time: 76, index: 7 }, // [01:06]
+    { time: 98, index: 8 }, // [01:16]
+    { time: 111, index: 9 },
+    
 ];
 
 // Format time function (converts seconds to MM:SS format)
@@ -1071,8 +1078,75 @@ searchBox.addEventListener('keypress', (e) => {
     }
 });
 
-// Play automatically when page loads
+// Play automatically when page loads - with user interaction workaround
 window.addEventListener('DOMContentLoaded', () => {
+    // Set initial volume
+    volumeSlider.value = 150; // 50%
+    volumeSlider.dispatchEvent(new Event('input'));
+    
+    // Create a notification or button to enable sound
+    const playNotification = document.createElement('div');
+    playNotification.className = 'play-notification';
+    playNotification.innerHTML = `
+        <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+                    background: var(--highlight-color); color: white; padding: 10px 20px; 
+                    border-radius: 5px; z-index: 1000; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+            Click to enable sound and start playing
+        </div>
+    `;
+    document.body.appendChild(playNotification);
+    
+    // Start playing when user clicks the notification
+    playNotification.addEventListener('click', () => {
+        // Remove notification
+        document.body.removeChild(playNotification);
+        
+        // Start playing with sound
+        if (!isPlaying) {
+            togglePlay();
+        }
+    });
+    
+    // Alternative approach - show controls in a ready state
+    // but require user to click play manually
+    playBtn.classList.add('ready-to-play');
+    // Optional visual indicator that player is ready
+});
+
+// Modify the togglePlay function to ensure autoplay works correctly
+function togglePlay() {
+    if (isPlaying) {
+        audioElement.pause();
+        playBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>`;
+    } else {
+        // Create a user interaction promise
+        const playPromise = audioElement.play();
+        
+        // Handle play promise (required for modern browsers)
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // Playback started successfully
+                playBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>`;
+            }).catch(error => {
+                // Auto-play was prevented
+                console.warn("Autoplay prevented:", error);
+                isPlaying = false;
+                
+                // Show a message to the user
+                alert("Please click play to start audio playback");
+            });
+        }
+        
+        // Make sure to sync audio with current time before attempting to play
+        syncAudioWithCurrentTime();
+    }
+    isPlaying = !isPlaying;
+}
     // Set initial volume
     volumeSlider.value = 150; // 50%
     volumeSlider.dispatchEvent(new Event('input'));
