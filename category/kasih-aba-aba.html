@@ -720,7 +720,7 @@
     <script>
         // Create audio element for music playback
 const audioElement = new Audio();
-audioElement.src = 'https://astronixid.vercel.app/assets/KASIH%20ABA%20ABA%20-%20EXTEND.mp3'; // Placeholder sound
+audioElement.src = 'https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/bell_ring.mp3'; // Placeholder sound
 audioElement.preload = 'auto';
 
 // DOM Elements
@@ -748,13 +748,13 @@ let isRepeat = false;
 // Lyrics timing map (time in seconds when each lyric should be highlighted)
 const lyricTimings = [
     { time: 0, index: 0 },
-    { time: 13, index: 1 },
-    { time: 23, index: 2 },
-    { time: 33, index: 3 },
-    { time: 55, index: 4 },
-    { time: 66, index: 5 },
-    { time: 76, index: 6 },
-    { time: 98, index: 7 },
+    { time: 13, index: 1 }, // [00:13]
+    { time: 23, index: 2 }, // [00:23]
+    { time: 33, index: 3 }, // [00:33]
+    { time: 55, index: 4 }, // [00:55]
+    { time: 66, index: 5 }, // [01:06]
+    { time: 76, index: 6 }, // [01:16]
+    { time: 98, index: 7 }  // [01:38]
 ];
 
 // Format time function (converts seconds to MM:SS format)
@@ -824,6 +824,8 @@ function updateProgress() {
     if (currentTime > totalDuration) {
         if (isRepeat) {
             currentTime = 0;
+            audioElement.currentTime = 0;
+            audioElement.play();
         } else {
             currentTime = totalDuration;
             togglePlay(); // Stop playing when song ends
@@ -846,26 +848,75 @@ const progressInterval = setInterval(updateProgress, 1000);
 // Event Listeners
 playBtn.addEventListener('click', togglePlay);
 
+// Update previous button to restart song when at beginning
 prevBtn.addEventListener('click', () => {
-    currentTime = Math.max(0, currentTime - 10); // Go back 10 seconds
+    // If we're within the first 3 seconds of the song, restart it
+    if (currentTime <= 3) {
+        currentTime = 0;
+        audioElement.currentTime = 0;
+    } else {
+        // Otherwise go back 10 seconds
+        currentTime = Math.max(0, currentTime - 10);
+    }
+    
+    // Update UI
     currentTimeDisplay.textContent = formatTime(currentTime);
     progressSlider.value = (currentTime / totalDuration) * 100;
     updateActiveLyric(currentTime);
+    
+    // If at the very beginning, treat as restart
+    if (currentTime === 0 && isPlaying) {
+        audioElement.currentTime = 0;
+        audioElement.play();
+    }
 });
 
+// Update next button
 nextBtn.addEventListener('click', () => {
-    currentTime = Math.min(totalDuration, currentTime + 10); // Go forward 10 seconds
+    // If we're near the end of the song, complete it
+    if (currentTime >= totalDuration - 5) {
+        currentTime = totalDuration;
+        if (isRepeat) {
+            // If repeat is on, restart the song
+            currentTime = 0;
+            audioElement.currentTime = 0;
+            if (isPlaying) {
+                audioElement.play();
+            }
+        } else {
+            // Otherwise just end the song
+            togglePlay();
+        }
+    } else {
+        // Go forward 10 seconds
+        currentTime = Math.min(totalDuration, currentTime + 10);
+    }
+    
+    // Update UI
     currentTimeDisplay.textContent = formatTime(currentTime);
     progressSlider.value = (currentTime / totalDuration) * 100;
     updateActiveLyric(currentTime);
 });
 
-// Progress slider
+// Progress slider with reset functionality
 progressSlider.addEventListener('input', () => {
     const seekTime = (progressSlider.value / 100) * totalDuration;
     currentTime = seekTime;
     currentTimeDisplay.textContent = formatTime(currentTime);
     updateActiveLyric(currentTime);
+    
+    // Reset/restart song if user drags to beginning (00:00)
+    if (currentTime === 0) {
+        // Reset the song state
+        currentTime = 0;
+        updateActiveLyric(0);
+        
+        // If song was playing, restart it
+        if (isPlaying) {
+            audioElement.currentTime = 0;
+            audioElement.play();
+        }
+    }
 });
 
 // Volume slider
