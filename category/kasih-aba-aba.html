@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronix | Kasih Aba Aba</title>
+    <style>
+        :root {
+            --dark-bg: #0a0a0a;
+            --light-text: #ffffff;
+            --grey-text: #b3b3b3;
+            --accent-color: #ffffff;
+            --secondary-bg: #1a1a1a;
+            --transition-speed: 0.3s;
+            --highlight-color: #3a7bd5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header/Navbar */
+        header {
+            padding: 20px 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(10, 10, 10, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--light-text);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.8rem;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background-color: var(--light-text);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .nav-links a {
+            color: var(--grey-text);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color var(--transition-speed) ease;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--light-text);
+        }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .search-box {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 40px 10px 15px;
+            border-radius: 50px;
+            width: 240px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--light-text);
+            width: 280px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        
+        /* Main Player Area */
+        .player-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Now Playing Section */
+        .now-playing-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .song-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .album-cover {
+            width: 280px;
+            height: 280px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        
+        .album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .song-details {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .song-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .song-artist {
+            font-size: 1.2rem;
+            color: var(--grey-text);
+            margin-bottom: 15px;
+        }
+        
+        .song-meta {
+            display: flex;
+            gap: 15px;
+            color: var(--grey-text);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .song-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--light-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            transition: color var(--transition-speed) ease;
+        }
+        
+        .action-btn:hover {
+            color: var(--highlight-color);
+        }
+        
+        /* Lyrics Section */
+        .lyrics-container {
+            margin-top: 40px;
+            padding-bottom: 100px;
+        }
+        
+        .lyrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .lyrics-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .lyrics-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .lyrics-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+        
+        .lyrics-line {
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .lyrics-line.active {
+            color: var(--highlight-color);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        /* Player Controls */
+        .player-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--secondary-bg);
+            padding: 15px 30px;
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--light-text);
+            cursor: pointer;
+            transition: transform var(--transition-speed) ease;
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            background-color: var(--light-text);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .play-btn svg {
+            fill: var(--dark-bg);
+        }
+        
+        .settings-panel {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .quality-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--light-text);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        
+        .quality-selector:focus {
+            outline: none;
+            border-color: var(--highlight-color);
+        }
+        
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .volume-text {
+            font-size: 0.85rem;
+            min-width: 60px;
+            text-align: right;
+        }
+        
+        .slider-container {
+            position: relative;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            transition: opacity var(--transition-speed) ease;
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--light-text);
+            cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--light-text);
+            cursor: pointer;
+        }
+        
+        .progress-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .time {
+            font-size: 0.85rem;
+            color: var(--grey-text);
+            min-width: 45px;
+        }
+        
+        .progress-slider {
+            flex: 1;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background-color: var(--secondary-bg);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+        
+        .queue-item {
+            display: flex;
+            gap: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease;
+        }
+        
+        .queue-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .queue-item.active {
+            background-color: rgba(58, 123, 213, 0.2);
+        }
+        
+        .queue-item-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .queue-item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .queue-item-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .queue-item-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .queue-item-artist {
+            font-size: 0.8rem;
+            color: var(--grey-text);
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .player-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .song-header {
+                flex-direction: column;
+            }
+            
+            .album-cover {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .control-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .settings-panel {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="#" class="logo">
+            <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/>
+                    <path d="M12 8l4 4l-4 4l-4-4l4-4z"/>
+                </svg>
+            </div>
+            ASTRONIX
+        </a>
+        
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="#">Discover</a>
+            <a href="#" class="active">Now Playing</a>
+            <a href="#">Library</a>
+            <a href="#">Playlists</a>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search for music...">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </div>
+    </header>
+    
+    <div class="player-container">
+        <main class="now-playing-section">
+            <div class="song-header">
+                <div class="album-cover">
+                    <img src="/api/placeholder/280/280" alt="Album Cover">
+                </div>
+                <div class="song-details">
+                    <h1 class="song-title">Cosmic Harmony</h1>
+                    <div class="song-artist">Stellar Sounds</div>
+                    <div class="song-meta">
+                        <span>Album: Galactic Pulse</span>
+                        <span>•</span>
+                        <span>Released: 2025</span>
+                        <span>•</span>
+                        <span>Duration: 4:12</span>
+                    </div>
+                    <div class="song-actions">
+                        <button class="action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            Save to Library
+                        </button>
+                        <button class="action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5z"></path>
+                                <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z"></path>
+                            </svg>
+                            Add to Playlist
+                        </button>
+                        <button class="action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                            Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lyrics-container">
+                <div class="lyrics-header">
+                    <h2 class="lyrics-title">Lyrics</h2>
+                    <div class="lyrics-actions">
+                        <button class="action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                        <button class="action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                </div>
+                <div class="lyrics-content">
+                    <div class="lyrics-line">Drifting through the cosmic sea</div>
+                    <div class="lyrics-line">Stars illuminate the way for me</div>
+                    <div class="lyrics-line">Planets dance in perfect time</div>
+                    <div class="lyrics-line">Celestial rhythm, so sublime</div>
+                    <div class="lyrics-line active">In this vast harmonic space</div>
+                    <div class="lyrics-line">Every note finds its place</div>
+                    <div class="lyrics-line">Echoes of creation's song</div>
+                    <div class="lyrics-line">Carry me where I belong</div>
+                    <div class="lyrics-line">...</div>
+                    <div class="lyrics-line">Gravity pulls, music flows</div>
+                    <div class="lyrics-line">Through the darkness, stardust glows</div>
+                    <div class="lyrics-line">Time and sound become as one</div>
+                    <div class="lyrics-line">Dancing around a distant sun</div>
+                    <div class="lyrics-line">...</div>
+                    <div class="lyrics-line">Cosmic harmony, infinite symphony</div>
+                    <div class="lyrics-line">Waves of sound across eternity</div>
+                    <div class="lyrics-line">Vibrations pulse through the void</div>
+                    <div class="lyrics-line">A universal truth deployed</div>
+                    <div class="lyrics-line">...</div>
+                    <div class="lyrics-line">As galaxies spin their ancient tales</div>
+                    <div class="lyrics-line">The melody of life prevails</div>
+                    <div class="lyrics-line">In perfect cosmic harmony</div>
+                    <div class="lyrics-line">We find our own serenity</div>
+                </div>
+            </div>
+        </main>
+        
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Up Next</h3>
+                <div class="queue-list">
+                    <div class="queue-item active">
+                        <div class="queue-item-img">
+                            <img src="/api/placeholder/50/50" alt="Album Cover">
+                        </div>
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">Cosmic Harmony</div>
+                            <div class="queue-item-artist">Stellar Sounds</div>
+                        </div>
+                    </div>
+                    <div class="queue-item">
+                        <div class="queue-item-img">
+                            <img src="/api/placeholder/50/50" alt="Album Cover">
+                        </div>
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">Orbital Echoes</div>
+                            <div class="queue-item-artist">Lunar Wave</div>
+                        </div>
+                    </div>
+                    <div class="queue-item">
+                        <div class="queue-item-img">
+                            <img src="/api/placeholder/50/50" alt="Album Cover">
+                        </div>
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">Interstellar Journey</div>
+                            <div class="queue-item-artist">Nebula Noise</div>
+                        </div>
+                    </div>
+                    <div class="queue-item">
+                        <div class="queue-item-img">
+                            <img src="/api/placeholder/50/50" alt="Album Cover">
+                        </div>
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">Galactic Pulse</div>
+                            <div class="queue-item-artist">Space Rhythm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Similar Tracks</h3>
+                <div class="queue-list">
+                    <div class="queue-item">
+                        <div class="queue-item-img">
+                            <img src="/api/placeholder/50/50" alt="Album Cover">
+                        </div>
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">Astral Waves</div>
+                            <div class="queue-item-artist">Cosmic Beats</div>
+                        </div>
+                    </div>
+                    <div class="queue-item">
+                        <div class="queue-item-img">
+                            <img src="/api/placeholder/50/50" alt="Album Cover">
+                        </div>
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">Lunar Phase</div>
+                            <div class="queue-item-artist">Night Orbit</div>
+                        </div>
+                    </div>
+                    <div class="queue-item">
+                        <div class="queue-item-img">
+                            <img src="/api/placeholder/50/50" alt="Album Cover">
+                        </div>
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">Nebula Dreams</div>
+                            <div class="queue-item-artist">Stellar Sounds</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <div class="player-controls">
+        <div class="control-row">
+            <div class="control-buttons">
+                <button class="control-btn" title="Shuffle">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 3 21 3 21 8"></polyline>
+                        <line x1="4" y1="20" x2="21" y2="3"></line>
+                        <polyline points="21 16 21 21 16 21"></polyline>
+                        <line x1="15" y1="15" x2="21" y2="21"></line>
+                        <line x1="4" y1="4" x2="9" y2="9"></line>
+                    </svg>
+                </button>
+                <button class="control-btn" title="Previous">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                        <line x1="5" y1="19" x2="5" y2="5"></line>
+                    </svg>
+                </button>
+                <button class="play-btn" title="Play/Pause">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                </button>
+                <button class="control-btn" title="Next">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                        <line x1="19" y1="5" x2="19" y2="19"></line>
+                    </svg>
+                </button>
+                <button class="control-btn" title="Repeat">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 1 21 5 17 9"></polyline>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                        <polyline points="7 23 3 19 7 15"></polyline>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="settings-panel">
+                <select class="quality-selector" title="Audio Quality">
+                    <option value="128">128 kbps</option>
+                    <option value="192">192 kbps</option>
+                    <option value="256">256 kbps</option>
+                    <option value="320" selected>320 kbps</option>
+                </select>
+                
+                <div class="volume-container">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="300" value="150" class="slider" id="volumeSlider">
+                    </div>
+                    <div class="volume-text">150 (50%)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="time">2:03</div>
+            <input type="range" min="0" max="100" value="48" class="slider progress-slider" id="progressSlider">
+            <div class="time">4:12</div>
+        </div>
+    </div>
+
+    <script>
+        // Volume slider functionality
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeText = document.querySelector('.volume-text');
+        
+        volumeSlider.addEventListener('input', function() {
+            const value = this.value;
+            const percentage = Math.round((value / 300) * 100);
+            volumeText.textContent = `${value} (${percentage}%)`;
+        });
+        
+        // Simulated lyrics highlighting
+        const lyricsLines = document.querySelectorAll('.lyrics-line');
+        let currentLine = 4; // Start with the currently active line
+        
+        function highlightNextLine() {
+            if (currentLine < lyricsLines.length - 1) {
+                lyricsLines[currentLine].classList.remove('active');
+                currentLine++;
+                lyricsLines[currentLine].classList.add('active');
+                
+                // Scroll to keep active line visible
+                lyricsLines[currentLine].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+        
+        // Play/pause button toggle
+        const playBtn = document.querySelector('.play-btn');
+        let isPlaying = true;
+        
+        playBtn.addEventListener('click', function() {
+            isPlaying = !isPlaying;
+            
+            if (isPlaying) {
+                this.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+                // Simulate lyrics progression when "playing"
+                lyricsInterval = setInterval(highlightNextLine, 5000);
+            } else {
+                this.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `;
+                // Stop lyrics progression when "paused"
+                clearInterval(lyricsInterval);
+            }
+        });
+        
+        // Simulated progress update
+        const progressSlider = document.getElementById('progressSlider');
+        const currentTimeText = document.querySelector('.time:first-child');
+        
+        let progress = 48; // Starting at 48% of the song
+        let lyricsInterval;
+        
+        if (isPlaying) {
