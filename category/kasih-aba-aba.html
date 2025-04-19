@@ -712,7 +712,7 @@
         
         <div class="progress-container">
             <div class="time">2:03</div>
-            <input type="range" min="0" max="100" value="48" class="slider progress-slider" id="progressSlider">
+            <input type="range" min="0" max="100" value="0" class="slider progress-slider" id="progressSlider">
             <div class="time">4:12</div>
         </div>
     </div>
@@ -720,7 +720,7 @@
     <script>
         // Create audio element for music playback
 const audioElement = new Audio();
-audioElement.src = 'https://astronixid.vercel.app/assets/KASIH%20ABA%20ABA%20-%20EXTEND.mp3'; // Placeholder sound
+audioElement.src = 'https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/bell_ring.mp3'; // Placeholder sound
 audioElement.preload = 'auto';
 
 // DOM Elements
@@ -741,20 +741,19 @@ const repeatBtn = document.querySelector('button[title="Repeat"]');
 let isPlaying = false;
 let currentTime = 0;
 let totalDuration = 139; // 2:19 in seconds
-let currentLyricIndex = 4; // Starting with active lyric
+let currentLyricIndex = 0; // Start with first lyric
 let isShuffle = false;
 let isRepeat = false;
 
 // Lyrics timing map (time in seconds when each lyric should be highlighted)
 const lyricTimings = [
-    { time: 0, index: 0 },
-    { time: 14, index: 1 }, // [00:13]
-    { time: 23, index: 2 }, // [00:23]
-    { time: 33, index: 3 }, // [00:33]
-    { time: 55, index: 4 }, // [00:55]
-    { time: 66, index: 5 }, // [01:06]
-    { time: 76, index: 6 }, // [01:16]
-    { time: 98, index: 7 }  // [01:38]
+    { time: 13, index: 0 },
+    { time: 23, index: 1 }, // [00:13]
+    { time: 33, index: 2 }, // [00:23]
+    { time: 55, index: 3 }, // [00:33]
+    { time: 66, index: 4 }, // [00:55]
+    { time: 76, index: 5 }, // [01:06]
+    { time: 98, index: 6 }, // [01:16]
 ];
 
 // Format time function (converts seconds to MM:SS format)
@@ -768,7 +767,7 @@ function formatTime(seconds) {
 currentTimeDisplay.textContent = formatTime(currentTime);
 totalTimeDisplay.textContent = formatTime(totalDuration);
 
-// Update active lyrics
+// Update active lyrics with smoother transitions
 function updateActiveLyric(time) {
     // Find the correct lyric for the current time
     let activeIndex = 0;
@@ -779,24 +778,32 @@ function updateActiveLyric(time) {
         }
     }
     
-    // Remove active class from all lyrics
-    lyricsLines.forEach(line => line.classList.remove('active'));
-    
-    // Add active class to current lyric
-    if (lyricsLines[activeIndex]) {
-        lyricsLines[activeIndex].classList.add('active');
+    // Only update if the lyric index has changed
+    if (activeIndex !== currentLyricIndex) {
+        // Remove active class from all lyrics
+        lyricsLines.forEach(line => line.classList.remove('active'));
         
-        // Scroll to active lyric
-        const lyricsContainer = document.querySelector('.lyrics-content');
-        const activeElement = lyricsLines[activeIndex];
+        // Add active class to current lyric
+        if (lyricsLines[activeIndex]) {
+            lyricsLines[activeIndex].classList.add('active');
+            
+            // Scroll to active lyric with smoother animation
+            const lyricsContainer = document.querySelector('.lyrics-content');
+            const activeElement = lyricsLines[activeIndex];
+            
+            lyricsContainer.scrollTo({
+                top: activeElement.offsetTop - lyricsContainer.offsetHeight / 2,
+                behavior: 'smooth'
+            });
+        }
         
-        lyricsContainer.scrollTo({
-            top: activeElement.offsetTop - lyricsContainer.offsetHeight / 2,
-            behavior: 'smooth'
-        });
+        currentLyricIndex = activeIndex;
     }
-    
-    currentLyricIndex = activeIndex;
+}
+
+// Synchronize audio element with current time
+function syncAudioWithCurrentTime() {
+    audioElement.currentTime = currentTime;
 }
 
 // Play/Pause function
@@ -807,6 +814,8 @@ function togglePlay() {
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>`;
     } else {
+        // Sync audio element time before playing
+        syncAudioWithCurrentTime();
         audioElement.play();
         playBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="4" width="4" height="16"></rect>
@@ -848,34 +857,27 @@ const progressInterval = setInterval(updateProgress, 1000);
 // Event Listeners
 playBtn.addEventListener('click', togglePlay);
 
-// Update previous button to restart song when at beginning
+// Update previous button functionality
 prevBtn.addEventListener('click', () => {
     // If we're within the first 3 seconds of the song, restart it
     if (currentTime <= 3) {
         currentTime = 0;
-        audioElement.currentTime = 0;
     } else {
         // Otherwise go back 10 seconds
         currentTime = Math.max(0, currentTime - 10);
     }
     
-    // Update UI
+    // Update UI and sync audio
     currentTimeDisplay.textContent = formatTime(currentTime);
     progressSlider.value = (currentTime / totalDuration) * 100;
     updateActiveLyric(currentTime);
-    
-    // If at the very beginning, treat as restart
-    if (currentTime === 0 && isPlaying) {
-        audioElement.currentTime = 0;
-        audioElement.play();
-    }
+    syncAudioWithCurrentTime();
 });
 
-// Update next button
+// Update next button functionality
 nextBtn.addEventListener('click', () => {
     // If we're near the end of the song, complete it
     if (currentTime >= totalDuration - 5) {
-        currentTime = totalDuration;
         if (isRepeat) {
             // If repeat is on, restart the song
             currentTime = 0;
@@ -885,37 +887,39 @@ nextBtn.addEventListener('click', () => {
             }
         } else {
             // Otherwise just end the song
-            togglePlay();
+            currentTime = totalDuration;
+            if (isPlaying) {
+                togglePlay();
+            }
         }
     } else {
         // Go forward 10 seconds
         currentTime = Math.min(totalDuration, currentTime + 10);
     }
     
-    // Update UI
+    // Update UI and sync audio
     currentTimeDisplay.textContent = formatTime(currentTime);
     progressSlider.value = (currentTime / totalDuration) * 100;
     updateActiveLyric(currentTime);
+    syncAudioWithCurrentTime();
 });
 
-// Progress slider with reset functionality
+// Improved progress slider functionality
 progressSlider.addEventListener('input', () => {
+    // Calculate new time based on slider position
     const seekTime = (progressSlider.value / 100) * totalDuration;
     currentTime = seekTime;
-    currentTimeDisplay.textContent = formatTime(currentTime);
-    updateActiveLyric(currentTime);
     
-    // Reset/restart song if user drags to beginning (00:00)
-    if (currentTime === 0) {
-        // Reset the song state
-        currentTime = 0;
-        updateActiveLyric(0);
-        
-        // If song was playing, restart it
-        if (isPlaying) {
-            audioElement.currentTime = 0;
-            audioElement.play();
-        }
+    // Update UI and sync audio position immediately
+    currentTimeDisplay.textContent = formatTime(currentTime);
+    syncAudioWithCurrentTime();
+    updateActiveLyric(currentTime);
+});
+
+// When user releases the slider, ensure audio is playing if it should be
+progressSlider.addEventListener('change', () => {
+    if (isPlaying) {
+        audioElement.play();
     }
 });
 
@@ -969,6 +973,7 @@ queueItems.forEach(item => {
         progressSlider.value = 0;
         currentTimeDisplay.textContent = formatTime(0);
         updateActiveLyric(0);
+        syncAudioWithCurrentTime();
         
         if (isPlaying) {
             // If currently playing, automatically start the new song
@@ -1063,6 +1068,47 @@ const searchBox = document.querySelector('.search-box');
 searchBox.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         alert(`You searched for: "${searchBox.value}"`);
+    }
+});
+
+// Play automatically when page loads
+window.addEventListener('DOMContentLoaded', () => {
+    // Set initial volume
+    volumeSlider.value = 150; // 50%
+    volumeSlider.dispatchEvent(new Event('input'));
+    
+    // Start playing automatically
+    setTimeout(() => {
+        togglePlay();
+    }, 500); // Small delay to ensure everything is loaded
+});
+
+// Handle audio element events
+audioElement.addEventListener('timeupdate', () => {
+    // Update current time if audio element time differs from our tracked time
+    // This provides a more accurate synchronization
+    if (Math.abs(audioElement.currentTime - currentTime) > 0.5) {
+        currentTime = audioElement.currentTime;
+        currentTimeDisplay.textContent = formatTime(currentTime);
+        progressSlider.value = (currentTime / totalDuration) * 100;
+        updateActiveLyric(currentTime);
+    }
+});
+
+// Ensure audio element correctly handles the end of song
+audioElement.addEventListener('ended', () => {
+    if (isRepeat) {
+        // Restart song if repeat is on
+        currentTime = 0;
+        audioElement.currentTime = 0;
+        audioElement.play();
+    } else {
+        // Otherwise stop playing
+        isPlaying = false;
+        currentTime = 0;
+        playBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>`;
     }
 });
     </script>
