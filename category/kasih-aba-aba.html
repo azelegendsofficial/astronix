@@ -760,7 +760,6 @@ const lyricTimings = [
     { time: 76, index: 7 }, // [01:06]
     { time: 98, index: 8 }, // [01:16]
     { time: 111, index: 9 },
-    
 ];
 
 // Format time function (converts seconds to MM:SS format)
@@ -1078,75 +1077,8 @@ searchBox.addEventListener('keypress', (e) => {
     }
 });
 
-// Play automatically when page loads - with user interaction workaround
+// Play automatically when page loads
 window.addEventListener('DOMContentLoaded', () => {
-    // Set initial volume
-    volumeSlider.value = 150; // 50%
-    volumeSlider.dispatchEvent(new Event('input'));
-    
-    // Create a notification or button to enable sound
-    const playNotification = document.createElement('div');
-    playNotification.className = 'play-notification';
-    playNotification.innerHTML = `
-        <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
-                    background: var(--highlight-color); color: white; padding: 10px 20px; 
-                    border-radius: 5px; z-index: 1000; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-            Click to enable sound and start playing
-        </div>
-    `;
-    document.body.appendChild(playNotification);
-    
-    // Start playing when user clicks the notification
-    playNotification.addEventListener('click', () => {
-        // Remove notification
-        document.body.removeChild(playNotification);
-        
-        // Start playing with sound
-        if (!isPlaying) {
-            togglePlay();
-        }
-    });
-    
-    // Alternative approach - show controls in a ready state
-    // but require user to click play manually
-    playBtn.classList.add('ready-to-play');
-    // Optional visual indicator that player is ready
-});
-
-// Modify the togglePlay function to ensure autoplay works correctly
-function togglePlay() {
-    if (isPlaying) {
-        audioElement.pause();
-        playBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>`;
-    } else {
-        // Create a user interaction promise
-        const playPromise = audioElement.play();
-        
-        // Handle play promise (required for modern browsers)
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                // Playback started successfully
-                playBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>`;
-            }).catch(error => {
-                // Auto-play was prevented
-                console.warn("Autoplay prevented:", error);
-                isPlaying = false;
-                
-                // Show a message to the user
-                alert("Please click play to start audio playback");
-            });
-        }
-        
-        // Make sure to sync audio with current time before attempting to play
-        syncAudioWithCurrentTime();
-    }
-    isPlaying = !isPlaying;
-}
     // Set initial volume
     volumeSlider.value = 150; // 50%
     volumeSlider.dispatchEvent(new Event('input'));
@@ -1186,3 +1118,5 @@ audioElement.addEventListener('ended', () => {
     }
 });
     </script>
+</body>
+</html>
